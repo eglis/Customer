@@ -1,0 +1,30 @@
+{
+  "name": "shineisp/shineisp-customers",
+  "description": "Customer module for ShineISP project",
+  "license": "BSD-2-Clause",
+  "type": "library",
+  "minimum-stability": "dev",
+  "keywords": [
+    "zf2",
+    "shineisp"
+  ],
+  "homepage": "http://github.com/shineisp/Profile",
+  "authors": [
+    {
+      "name": "Michelangelo Turillo",
+      "email": "info@shineisp.com",
+      "homepage": "http://shineisp.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4"
+  },
+  "autoload": {
+    "psr-0": {
+      "Customers": "src/"
+    },
+    "classmap": [
+      "./Module.php"
+    ]
+  }
+}
