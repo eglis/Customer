@@ -1,5 +1,5 @@
 {
-  "name": "shineisp/shineisp-customers",
+  "name": "shineisp/shineisp-customer",
   "description": "Customer module for ShineISP project",
   "license": "BSD-2-Clause",
   "type": "library",
@@ -21,7 +21,7 @@
   },
   "autoload": {
     "psr-0": {
-      "Customers": "src/"
+      "Customer": "src/"
     },
     "classmap": [
       "./Module.php"
