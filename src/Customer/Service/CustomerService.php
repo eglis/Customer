@@ -89,6 +89,17 @@ class CustomerService implements CustomerServiceInterface, EventManagerAwareInte
         
         return $records;
     }
+    /**
+     * @inheritDoc
+     */
+    public function getCustomerByUid($uid)
+    {
+        $record = $this->tableGateway->select(function (\Zend\Db\Sql\Select $select) use ($uid){
+            $select->where(array('uid' => $uid));
+        });
+
+        return $record->current();
+    }
 
     /**
      * @inheritDoc
@@ -139,7 +150,14 @@ class CustomerService implements CustomerServiceInterface, EventManagerAwareInte
      */
     public function delete($id)
     {
-    	$this->tableGateway->delete(array(
+        $record = $this->find($id);
+        $path = __DIR__ . '/../../../../../../public/documents/customers/' . $record->getUid() . '/';
+
+        if($this->rrmdir($path)){
+            @mkdir($path);
+        }
+
+        $this->tableGateway->delete(array(
     			'id' => $id
     	));
     }
@@ -151,50 +169,101 @@ class CustomerService implements CustomerServiceInterface, EventManagerAwareInte
     {
     	$hydrator = new ClassMethods();
     	$utils = new Utilities();
-    	
+    	$uuid = $utils->generateUid();
+
     	// extract the data from the object
     	$data = $hydrator->extract($record);
     	$id = (int) $record->getId();
-    	
+
     	$this->getEventManager()->trigger(__FUNCTION__ . '.pre', null, array('data' => $data));  // Trigger an event
     	
     	// delete the foreign Address object from the save action
     	unset( $data['address']);
-    	
+
+        // prepare the dates
+        if(!empty($data['birthdate'])){
+            $data['birthdate'] = $data['birthdate']->format('Y-m-d');
+        }
+
     	if ($id == 0) {
     		unset($data['id']);
     		$data['createdat'] = date('Y-m-d H:i:s');
     		$data['updatedat'] = date('Y-m-d H:i:s');
-			$data['uid'] = $utils->generateUid();
-			
+			$data['uid'] = $uuid;
+
     		// Save the data
     		$this->tableGateway->insert($data); 
     		
     		// Get the ID of the record
     		$id = $this->tableGateway->getLastInsertValue();
     	} else {
-    		
+
     		$rs = $this->find($id);
-    		
+            $data['uid'] = $rs->getUid();
     		if (!empty($rs)) {
     			$data['updatedat'] = date('Y-m-d H:i:s');
     			unset( $data['createdat']);
 
-    			// Save the data
+                // Save the data
     			$this->tableGateway->update($data, array (
     					'id' => $id
     			));
-    			
+
     		} else {
     			throw new \Exception('Record ID does not exist');
     		}
     	}
     	
     	$record = $this->find($id);
+
+        $path = __DIR__ . '/../../../../../../public/documents/customers/' . $record->getUid() . '/';
+        if(!realpath($path)){
+            @mkdir($path);
+        }
+
     	$this->getEventManager()->trigger(__FUNCTION__ . '.post', null, array('id' => $id, 'data' => $data, 'record' => $record));  // Trigger an event
     	return $record;
     }
-    
+
+    private function rrmdir($dir) {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($dir."/".$object))
+                        rrmdir($dir."/".$object);
+                    else
+                        unlink($dir."/".$object);
+                }
+            }
+            rmdir($dir);
+        }
+    }
+
+    /**
+     * Get all customer files
+     *
+     * @param $id
+     * @return array
+     */
+    public function getFiles($customer){
+
+        $files = array();
+
+        $path = __DIR__ . '/../../../../../../public/documents/customers/' . $customer->getUid() . '/';
+        if(!file_exists($path)){
+            return false;
+        }
+        $directory_iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path));
+
+        foreach($directory_iterator as $filename => $path_object)
+        {
+            if("." != $path_object->getFilename() && ".." != $path_object->getFilename())
+                $files[] = '/documents/customers/' . $customer->getUid() ."/". $path_object->getFilename();
+        }
+
+        return $files;
+    }
     
 	/* (non-PHPdoc)
      * @see \Zend\EventManager\EventManagerAwareInterface::setEventManager()

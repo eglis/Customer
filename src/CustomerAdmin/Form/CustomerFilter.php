@@ -30,7 +30,6 @@ class CustomerFilter extends InputFilter
     			'required' => false,
     			'filters' => array(
     					array('name' => 'Null'),
-    					array('name' => 'StringTrim'),
     			)
     	));
     	
@@ -110,7 +109,7 @@ class CustomerFilter extends InputFilter
     							array(
     									'name' => 'File\RenameUpload',
     									'options' => array(
-    											'target' => PUBLIC_PATH . '/documents/customers/',
+    											'target' => __DIR__ . '/../../../../documents/customers/',
     											'overwrite' => true,
     											'use_upload_name' => true,
     									),

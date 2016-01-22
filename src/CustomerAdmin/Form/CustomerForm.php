@@ -59,7 +59,7 @@ class CustomerForm extends Form {
 		$this->add ( array ('name' => 'firstname', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'First name' ) ) ) );
 		$this->add ( array ('name' => 'lastname', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Last name' ) ) ) );
 		$this->add ( array ('name' => 'note', 'attributes' => array ('type' => 'textarea', 'class' => 'wysiwyg' ), 'options' => array ('label' => _ ( 'Private Notes' ) ) ) );
-		
+
 		$this->add ( array ('name' => 'birthdate', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Birth date' ) ) ) );
 		$this->add ( array ('name' => 'birthplace', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Birth place' ) ) ) );
 		$this->add ( array ('name' => 'birthdistrict', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Birth district' ) ) ) );

@@ -83,6 +83,14 @@ class IndexController extends AbstractActionController
 		$this->form = $form;
 		$this->filter = $formfilter;
 		$this->settings = $settings;
+
+        if(!realpath(__DIR__ . '/../../../../../../public/documents')){
+            @mkdir(__DIR__ . '/../../../../../../public/documents');
+        }
+
+        if(!realpath(__DIR__ . '/../../../../../../public/documents/customers')){
+            @mkdir(__DIR__ . '/../../../../../../public/documents/customers');
+        }
 	}
 	
 	
@@ -96,7 +104,7 @@ class IndexController extends AbstractActionController
 		
 		// get the datagrid ready to be shown in the template view
 		$response = $this->datagrid->getResponse();
-		
+
 		if ($this->datagrid->isHtmlInitReponse()) {
 			$view = new ViewModel();
 			$view->addChild($response, 'grid');
@@ -130,14 +138,16 @@ class IndexController extends AbstractActionController
     	$id = $this->params()->fromRoute('id');
     	$address = null;
     	$contact = null;
-    	
+        $files = null;
+
     	$form = $this->form;
     
     	// Get the record by its id
     	$customer = $this->customerService->find($id);
-    	
+
     	// Get the address of the customer
     	if(!empty($customer) && $customer->getId()){
+            $files = $this->customerService->getFiles($customer);
     		$address = $this->addressService->findByParameter('customer_id', $customer->getId());
     		$contact = $this->contactService->findByParameter('customer_id', $customer->getId());
     	}else{
@@ -149,11 +159,13 @@ class IndexController extends AbstractActionController
     	if (! empty($customer)) {
     		$form->bind($customer);
     	}
-    
-    	$viewModel = new ViewModel(array (
+
+        $viewModel = new ViewModel(array (
     			'form' => $form,
+    			'data' => $customer,
     			'address' => $address,
     			'contact' => $contact,
+    			'files' => $files,
     	));
     
     	return $viewModel;
@@ -166,7 +178,7 @@ class IndexController extends AbstractActionController
      */
     public function processAction ()
     {
-    	
+
     	if (! $this->request->isPost()) {
     		return $this->redirect()->toRoute(NULL, array (
     				'controller' => 'customer',
@@ -175,7 +187,6 @@ class IndexController extends AbstractActionController
     	}
     	
     	$request = $this->getRequest();
-    	$post = $this->request->getPost();
     	$form = $this->form;
     	
     	$post = array_merge_recursive(
@@ -183,24 +194,22 @@ class IndexController extends AbstractActionController
     			$request->getFiles()->toArray()
     	);
     	
-    	// create the customer upload directories
-    	@mkdir(PUBLIC_PATH . '/documents/');
-    	@mkdir(PUBLIC_PATH . '/documents/customers');
-    	 
+
     	// get the input file filter in order to set the right file upload path
     	$inputFilter = $this->filter;
-    	 
+
+
     	// customize the path
     	if(!empty($post['id'])){
-    	    @mkdir(PUBLIC_PATH . '/documents/customers/' . $post['id']);
-    	    $path = PUBLIC_PATH . '/documents/customers/' . $post['id'] . '/';
-    	    $fileFilter = $inputFilter->get('file')->getFilterChain()->getFilters()->top()->setTarget($path);
+            $customer = $this->customerService->find($post['id']);
+    	    $path = __DIR__ . '/../../../../../../public/documents/customers/' . $customer->getUid() . '/';
+            $inputFilter->get('file')->getFilterChain()->getFilters()->top()->setTarget($path);
     	}
     	
     	$form->setData($post);
     	
     	// set the input filter
-    	$form->setInputFilter($fileFilter);
+    	$form->setInputFilter($inputFilter);
     	
     	if (!$form->isValid()) {
     		$viewModel = new ViewModel(array (
@@ -216,7 +225,7 @@ class IndexController extends AbstractActionController
     	$data = $form->getData();
     	$address = $data->getAddress();
 
-    	// Save the data in the database
+        // Save the data in the database
     	$record = $this->customerService->save($data);
     	
     	// Check if the contact has been set
@@ -263,19 +272,42 @@ class IndexController extends AbstractActionController
     	}
     
     	$this->flashMessenger()->setNamespace('danger')->addMessage('The record has been not deleted!');
-    	return $this->redirect()->toRoute('zfcadmin/customer/default');
+        $this->redirect()->toRoute('zfcadmin/customer/default');
     }
-    
+
     /**
-     * Delete the address 
+     * Delete the file
+     *
+     * @return \Zend\Http\Response
+     */
+    public function delfileAction ()
+    {
+        $uid = $this->params()->fromRoute('uid');
+        $filename = $this->params()->fromRoute('file');
+
+        if (!empty($uid) && !empty($filename)) {
+            $customer = $this->customerService->getCustomerByUid($uid);
+
+            if(unlink( __DIR__ . '/../../../../../../public/documents/customers/' . $uid . '/' . $filename)){
+                $this->flashMessenger()->setNamespace('success')->addMessage('The file has been deleted!');
+                return $this->redirect()->toRoute('zfcadmin/customer/default', array('action' => 'edit', 'id' => $customer->getId()));
+            }
+        }
+
+        $this->flashMessenger()->setNamespace('danger')->addMessage('The file has been not deleted!');
+        return $this->redirect()->toRoute('zfcadmin/customer/default');
+    }
+
+    /**
+     * Delete the address
      *
      * @return \Zend\Http\Response
      */
     public function deladdressAction ()
     {
-    	$id = $this->params()->fromRoute('id');
-    
-    	if (is_numeric($id)) {
+        $id = $this->params()->fromRoute('id');
+
+        if (is_numeric($id)) {
     
     		$address = $this->addressService->find($id);
     		$customerId = $address->getCustomerId();

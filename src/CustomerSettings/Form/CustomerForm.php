@@ -22,6 +22,18 @@ class CustomerForm extends Form
                         'label' => _('Records per page for the admin grid'),
                 )
         ));
+
+        $this->add(array (
+                'name' => 'attachments',
+                'attributes' => array (
+                        'class' => 'form-control',
+                		'value' => '/documents/customers/'
+                ),
+                'options' => array (
+                        'label' => _('Type here the path for all customers attachment files. eg: /documents/customers/'),
+                        'comment' => _('Type here the path for all customers attachment files. eg: /documents/customers/'),
+                )
+        ));
         
         $this->add(array ( 
                 'name' => 'submit', 

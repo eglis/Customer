@@ -1,17 +1,33 @@
 <?php $this->headTitle()->prepend($this->translate('Edit page')); ?>
 
-<?php 
+<?php
+    $files = $this->files;
+    $data = $this->data;
     $form = $this->form;
     $form->prepare();
     $form->setAttribute('action', $this->url(NULL, array( 'action' => 'process')));
     $form->setAttribute('method', 'post');
     echo $this->form()->openTag($form);
+
+    if(!empty($data)){
+        if($data->getCompany()){
+            $header = $data->getCompany();
+        }else{
+            $header = $data->getLastname();
+        }
+    }
 ?>
 
 <div class="row">
     <div class="col-lg-8">
-        <h2><?php echo $this->translate('Customer') ?></h2>
-        <p><?php echo $this->translate('Create and customer management') ?></p>
+        <?php if(!empty($data)): ?>
+            <h2><?php echo $data->getCompany() ?> <small><?php echo $data->getLastname()?> <?php echo $data->getFirstname()?></small></h2>
+            <p class="text-muted"><small><?php echo $data->getUid() ?></small></p>
+            <p><?php echo sprintf($this->translate("Edit %s's profile information"), $header) ?></p>
+        <?php else: ?>
+            <h2><?php echo $this->translate('Customer') ?></h2>
+            <p><?php echo $this->translate('Create and customer management') ?></p>
+        <?php endif; ?>
     </div>
     <div class="col-lg-4">
     	<div class="text-right">
@@ -39,18 +55,10 @@
 				<li class="active"><a data-toggle="tab" href="#tab10"><?php echo $this->translate('Main');?></a></li> 
 				<li><a data-toggle="tab" href="#tab20"><?php echo $this->translate('Personal data');?></a></li> 
 				<li><a data-toggle="tab" href="#tab30"><?php echo $this->translate('Addresses');?></a></li> 
-				<li><a data-toggle="tab" href="#tab40"><?php echo $this->translate('Contacts');?></a></li> 
-				<li><a data-toggle="tab" href="#tab50"><?php echo $this->translate('Attachments');?></a></li> 
-				
-				<!-- 
-				<li><a data-toggle="tab" href="#tab60"><?php echo $this->translate('Domains');?></a></li> 
-				<li><a data-toggle="tab" href="#tab70"><?php echo $this->translate('Orders');?></a></li> 
-				<li><a data-toggle="tab" href="#tab80"><?php echo $this->translate('Invoices');?></a></li> 
-				<li><a data-toggle="tab" href="#tab90"><?php echo $this->translate('Services');?></a></li>  
-				<li><a data-toggle="tab" href="#tab100"><?php echo $this->translate('Tickets');?></a></li> 
-				<li><a data-toggle="tab" href="#tab110"><?php echo $this->translate('Emails');?></a></li> 
-				<li><a data-toggle="tab" href="#tab120"><?php echo $this->translate('Options');?></a></li>
-				-->
+				<li><a data-toggle="tab" href="#tab40"><?php echo $this->translate('Contacts');?></a></li>
+				<?php if(!empty($data)):?>
+                    <li><a data-toggle="tab" href="#tab50"><?php echo $this->translate('Attachments');?></a></li>
+                <?php endif; ?>
 				<li><a data-toggle="tab" href="#tab130"><?php echo $this->translate('Private notes');?></a></li> 
 			</ul>
 			<div class="tab-content">
@@ -173,13 +181,14 @@
 		                <?php if(!empty($this->address)): ?>
 		                    <?php foreach ($this->address as $address): ?>
 		                        <address>
-		                            <strong><?php echo $address->getStreet() ?></strong><br>
+                                    <strong><?php echo $address->getStreet() ?></strong><br>
 		                            <?php echo $address->getCity() ?>, <?php echo $address->getCountryId() ?> <?php echo $address->getCode() ?><br>
 		                            <a onclick="return confirm('<?php echo $this->translate('Are you sure?') ?>')" href="/admin/customer/deladdress/<?php echo $address->getId() ?>"><?php echo $this->translate('Delete') ?></a> | 
 		                            <a target="_blank" href="http://www.google.com/maps?q=<?php echo $address->getLatitude() ?>,<?php echo $address->getLongitude() ?>"><?php echo $this->translate('Show on Google Map') ?></a>
 		                        </address>
+                                <?php echo $this->createMap(array('latitude' => $address->getLatitude(), 'longitude' => $address->getLongitude()), 14); ?>
 		                    <?php endforeach; ?>
-		                    <?php # echo $this->createMap($this->address); ?>
+
 		                <?php endif; ?>
 		            </div>
                     
@@ -217,19 +226,37 @@
 		        		<?php endif;?>
 		        	</div>
                 </div>
-                
-                <div class="tab-pane" id="tab50">
-			   		<div class="col-lg-6">
-                		<div class="form-group">
-			                <?php echo $this->formLabel($form->get('file')); ?>
-		                    <?php echo $this->formElement($form->get('file')); ?>
-		                    <?php echo $this->formElementErrors($form->get('file')); ?>
-		                </div>
-		        	</div>
-		        	<div class="col-lg-6">
-			   		</div>
-                </div>
-                
+
+                <?php if(!empty($data)):?>
+                    <div class="tab-pane" id="tab50">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <?php echo $this->formLabel($form->get('file')); ?>
+                                <?php echo $this->formElement($form->get('file')); ?>
+                                <?php echo $this->formElementErrors($form->get('file')); ?>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <?php if(!empty($files)): ?>
+                            <div class="panel panel-default">
+                                <!-- Default panel contents -->
+                                <div class="panel-heading"><?php echo $this->translate("Customer's Files") ?></div>
+                                <div class="panel-body">
+                                    <p><?php echo $this->translate('Here you can see all the files of the customer.') ?></p>
+                                </div>
+                                <ul class="list-group">
+                                    <?php foreach ($files as $file): ?>
+                                        <li class="list-group-item">
+                                            <a href="<?php echo $file?>"><?php echo basename($file)?></a> -
+                                            <a onclick="return confirm('<?php echo $this->translate('Are you sure?') ?>')" href="/admin/customer/delfile/<?php echo $data->getUid() ?>/<?php echo basename($file) ?>"><?php echo $this->translate('Delete') ?></a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                           <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 
                 <div class="tab-pane" id="tab130">
 			   		<div class="col-lg-12">
@@ -245,5 +272,4 @@
 	</div>
 </div>
 <?php echo $this->formElement($form->get('id')); ?>
-
 <?php echo $this->form()->closeTag() ?>

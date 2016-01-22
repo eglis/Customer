@@ -104,10 +104,14 @@ class AddressService implements AddressServiceInterface, EventManagerAwareInterf
     	if(empty($parameter) || empty($value)){
     		return false;
     	}
-    	
-    	$records = $this->tableGateway->select(array($parameter => $value));
-    	$records->buffer();
-    	
+
+        $records = $this->tableGateway->select(function (\Zend\Db\Sql\Select $select) use ($parameter, $value) {
+            $select->where(array($parameter => $value));
+            $select->join('base_country', 'country_id = base_country.id', array ('name'), 'left');
+        });
+
+        $records->buffer();
+
     	return $records;
     }
 

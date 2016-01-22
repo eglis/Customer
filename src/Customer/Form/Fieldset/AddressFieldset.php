@@ -114,6 +114,7 @@ class AddressFieldset extends Fieldset implements InputFilterProviderInterface
     public function getInputFilterSpecification()
     {
     	return array(
+    			'country_id' => array('required' => false),
     			'region_id' => array('required' => false),
     			'province_id' => array('required' => false),
     	);
