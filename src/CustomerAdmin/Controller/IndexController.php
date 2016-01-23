@@ -84,13 +84,13 @@ class IndexController extends AbstractActionController
 		$this->filter = $formfilter;
 		$this->settings = $settings;
 
-        if(!realpath(__DIR__ . '/../../../../../../public/documents')){
-            @mkdir(__DIR__ . '/../../../../../../public/documents');
-        }
+		$attachmentPath = $settings->getValueByParameter('customer', 'attachments');
 
-        if(!realpath(__DIR__ . '/../../../../../../public/documents/customers')){
-            @mkdir(__DIR__ . '/../../../../../../public/documents/customers');
-        }
+        if(!empty($attachmentPath) && !realpath(__DIR__ . '/../../../../../../public'.$attachmentPath)){
+            @mkdir(__DIR__ . '/../../../../../../public'.$attachmentPath);
+        }elseif(!realpath(__DIR__ . '/../../../../../../public'.$attachmentPath)){
+			@mkdir(__DIR__ . '/../../../../../../public/documents/customers');
+		}
 	}
 	
 	
@@ -202,7 +202,14 @@ class IndexController extends AbstractActionController
     	// customize the path
     	if(!empty($post['id'])){
             $customer = $this->customerService->find($post['id']);
-    	    $path = __DIR__ . '/../../../../../../public/documents/customers/' . $customer->getUid() . '/';
+			$attachmentPath = $this->settings->getValueByParameter('customer', 'attachments');
+
+			if(!empty($attachmentPath) && realpath(__DIR__ . '/../../../../../../public'.$attachmentPath)){
+				$path = __DIR__ . '/../../../../../../public' .$attachmentPath . $customer->getUid() . '/';
+			}elseif(realpath(__DIR__ . '/../../../../../../public'.$attachmentPath)){
+				$path = __DIR__ . '/../../../../../../public/documents/customers/' . $customer->getUid() . '/';
+			}
+
             $inputFilter->get('file')->getFilterChain()->getFilters()->top()->setTarget($path);
     	}
     	
@@ -288,7 +295,15 @@ class IndexController extends AbstractActionController
         if (!empty($uid) && !empty($filename)) {
             $customer = $this->customerService->getCustomerByUid($uid);
 
-            if(unlink( __DIR__ . '/../../../../../../public/documents/customers/' . $uid . '/' . $filename)){
+			$attachmentPath = $this->settings->getValueByParameter('customer', 'attachments');
+
+			if(!empty($attachmentPath) && realpath(__DIR__ . '/../../../../../../public'.$attachmentPath)){
+				$path = __DIR__ . '/../../../../../../public' .$attachmentPath . $uid . '/' . $filename;
+			}elseif(realpath(__DIR__ . '/../../../../../../public'.$attachmentPath)){
+				$path = __DIR__ . '/../../../../../../public/documents/customers/' . $uid . '/' . $filename;
+			}
+
+            if(unlink($path)){
                 $this->flashMessenger()->setNamespace('success')->addMessage('The file has been deleted!');
                 return $this->redirect()->toRoute('zfcadmin/customer/default', array('action' => 'edit', 'id' => $customer->getId()));
             }
