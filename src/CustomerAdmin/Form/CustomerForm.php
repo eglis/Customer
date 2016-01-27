@@ -66,7 +66,10 @@ class CustomerForm extends Form {
 		$this->add ( array ('name' => 'birthcountry', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Birth country' ) ) ) );
 		$this->add ( array ('name' => 'birthnationality', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Birth nationality' ) ) ) );
 		$this->add ( array ('name' => 'taxpayernumber', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'Tax payer number' ) ) ) );
-		
+		$this->add ( array ('name' => 'vat', 'attributes' => array ('type' => 'text', 'class' => 'form-control' ), 'options' => array ('label' => _ ( 'VAT' ) ) ) );
+
+		$this->add ( array ('type' => 'Customer\Form\Element\CustomerGroup', 'name' => 'group_id', 'attributes' => array ('class' => 'form-control' ), 'options' => array ('label' => _ ( 'Customer Group' ) ) ) );
+		$this->add ( array ('type' => 'Base\Form\Element\Languages', 'name' => 'language_id', 'attributes' => array ('class' => 'form-control' ), 'options' => array ('label' => _ ( 'Language' ) ) ) );
 		$this->add ( array ('type' => 'Customer\Form\Element\Legalform', 'name' => 'legalform_id', 'attributes' => array ('class' => 'form-control' ), 'options' => array ('label' => _ ( 'Legal form' ) ) ) );
 		$this->add ( array ('type' => 'Customer\Form\Element\Companytype', 'name' => 'type_id', 'attributes' => array ('class' => 'form-control' ), 'options' => array ('label' => _ ( 'Company Type' ) ) ) );
 		$this->add ( array ('type' => 'Customer\Form\Element\Status', 'name' => 'status_id', 'attributes' => array ('class' => 'form-control' ), 'options' => array ('label' => _ ( 'Status' ), 'section' => 'customers') ) );		
@@ -82,6 +85,8 @@ class CustomerForm extends Form {
 		$this->add ( array ('name' => 'address', 'type' => '\Customer\Form\Fieldset\AddressFieldset', 'object' => '\Customer\Entity\Address', 'options' => array ('use_as_base_fieldset' => false ) ) );
 		
 		$this->add ( array ('name' => 'submit', 'attributes' => array ('type' => 'submit', 'class' => 'btn btn-success', 'value' => _ ( 'Save' ) ) ) );
+		$this->add ( array ('name' => 'user_id', 'attributes' => array ('type' => 'hidden' ) ) );
+		$this->add ( array ('name' => 'uid', 'attributes' => array ('type' => 'hidden' ) ) );
 		$this->add ( array ('name' => 'id', 'attributes' => array ('type' => 'hidden' ) ) );
 	}
 }

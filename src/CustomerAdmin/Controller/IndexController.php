@@ -159,7 +159,7 @@ class IndexController extends AbstractActionController
     	if (! empty($customer)) {
     		$form->bind($customer);
     	}
-
+		#\Zend\Debug\Debug::dump($customer);
         $viewModel = new ViewModel(array (
     			'form' => $form,
     			'data' => $customer,
@@ -212,7 +212,7 @@ class IndexController extends AbstractActionController
 
             $inputFilter->get('file')->getFilterChain()->getFilters()->top()->setTarget($path);
     	}
-    	
+
     	$form->setData($post);
     	
     	// set the input filter
@@ -364,4 +364,16 @@ class IndexController extends AbstractActionController
     	$this->flashMessenger()->setNamespace('danger')->addMessage('The record has been not deleted!');
     	return $this->redirect()->toRoute('zfcadmin/customer/default');
     }
+
+
+
+	/**
+	 * List of all records
+	 */
+	public function massAction ()
+	{
+		$task = $this->params()->fromRoute('task');
+		\Zend\Debug\Debug::dump($_POST);
+		die($task);
+	}
 }

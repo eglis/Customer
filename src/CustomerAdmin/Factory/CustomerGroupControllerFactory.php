@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2014 Shine Software.
  * All rights reserved.
@@ -43,12 +44,12 @@
 
 namespace CustomerAdmin\Factory;
 
-use CustomerAdmin\Controller\IndexController;
+use CustomerAdmin\Controller\CustomerGroupController;
 use Zend\ServiceManager\FactoryInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
-use CustomerAdmin\Model\CustomerDatagrid;
+use CustomerAdmin\Model\CustomerGroupDatagrid;
 
-class IndexControllerFactory implements FactoryInterface
+class CustomerGroupControllerFactory implements FactoryInterface
 {
     /**
      * Create service
@@ -60,20 +61,18 @@ class IndexControllerFactory implements FactoryInterface
     public function createService(ServiceLocatorInterface $serviceLocator)
     {
         $realServiceLocator = $serviceLocator->getServiceLocator();
-        $customerService = $realServiceLocator->get('CustomerService');
-        $addressService = $realServiceLocator->get('AddressService');
-        $contactService = $realServiceLocator->get('ContactService');
-        $statusService = $realServiceLocator->get('StatusService');
+        $contactTypeService = $realServiceLocator->get('CustomerGroupService');
         $settings = $realServiceLocator->get('SettingsService');
+
         $dbAdapter = $realServiceLocator->get('Zend\Db\Adapter\Adapter');
         $datagrid = $realServiceLocator->get('ZfcDatagrid\Datagrid');
-        $form = $realServiceLocator->get('FormElementManager')->get('CustomerAdmin\Form\CustomerForm');
-        $formfilter = $realServiceLocator->get('AdminCustomerFilter');
+        $form = $realServiceLocator->get('FormElementManager')->get('CustomerAdmin\Form\CustomerGroupForm');
+        $formfilter = $realServiceLocator->get('CustomerGroupFilter');
         
         // prepare the datagrid to handle the custom columns and data
-		$theDatagrid = new CustomerDatagrid($dbAdapter, $customerService, $statusService, $datagrid, $settings);
-		$grid = $theDatagrid->getDatagrid();
-		
-        return new IndexController($customerService, $addressService, $contactService, $form, $formfilter, $grid, $settings);
+        $theDatagrid = new CustomerGroupDatagrid($dbAdapter, $datagrid, $settings);
+        $grid = $theDatagrid->getDatagrid();
+        
+        return new CustomerGroupController($contactTypeService, $form, $formfilter, $grid, $settings);
     }
 }

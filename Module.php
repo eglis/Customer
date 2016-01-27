@@ -47,6 +47,7 @@ use Customer\Entity\Customer;
 use Customer\Entity\ContactType;
 use Customer\Entity\Contact;
 use Customer\Entity\Address;
+use Customer\Entity\CustomerGroup;
 use Customer\Entity\Legalform;
 use Customer\Entity\Companytype;
 use Customer\Service\CustomerService;
@@ -94,16 +95,25 @@ class Module implements DependencyIndicatorInterface {
 								$address = new TableGateway ( 'customer_address', $dbAdapter, null, $resultSetPrototype );
 								$service = new \Customer\Service\AddressService ( $address, $sm->get('CountryService'), $sm->get('RegionService'), $sm->get('ProvinceService'), $translator );
 								return $service;
-						 }, 
+						 },
 						'LegalformService' => function ($sm) {
-								$dbAdapter = $sm->get ( 'Zend\Db\Adapter\Adapter' );
-								$translator = $sm->get ( 'translator' );
-								$resultSetPrototype = new ResultSet ();
-								$resultSetPrototype->setArrayObjectPrototype ( new Legalform () );
-								$tableGateway = new TableGateway ( 'customer_legalform', $dbAdapter, null, $resultSetPrototype );
-								$service = new \Customer\Service\LegalformService ( $tableGateway, $translator );
-								return $service;
-						 }, 
+							$dbAdapter = $sm->get ( 'Zend\Db\Adapter\Adapter' );
+							$translator = $sm->get ( 'translator' );
+							$resultSetPrototype = new ResultSet ();
+							$resultSetPrototype->setArrayObjectPrototype ( new Legalform () );
+							$tableGateway = new TableGateway ( 'customer_legalform', $dbAdapter, null, $resultSetPrototype );
+							$service = new \Customer\Service\LegalformService ( $tableGateway, $translator );
+							return $service;
+						},
+						'CustomerGroupService' => function ($sm) {
+							$dbAdapter = $sm->get ( 'Zend\Db\Adapter\Adapter' );
+							$translator = $sm->get ( 'translator' );
+							$resultSetPrototype = new ResultSet ();
+							$resultSetPrototype->setArrayObjectPrototype ( new CustomerGroup() );
+							$tableGateway = new TableGateway ( 'customer_group', $dbAdapter, null, $resultSetPrototype );
+							$service = new \Customer\Service\CustomerGroupService ( $tableGateway, $translator );
+							return $service;
+						},
 						'CompanytypeService' => function ($sm) {
 								$dbAdapter = $sm->get ( 'Zend\Db\Adapter\Adapter' );
 								$translator = $sm->get ( 'translator' );
@@ -140,17 +150,27 @@ class Module implements DependencyIndicatorInterface {
 						
 						'AdminCustomerFilter' => function ($sm) {
 							return new \CustomerAdmin\Form\CustomerFilter ();
-						}, 
-						
+						},
+
 						'ContactTypeForm' => function ($sm) {
 							$form = new \CustomerAdmin\Form\ContactTypeForm ();
 							$form->setInputFilter ( $sm->get ( 'ContactTypeFilter' ) );
 							return $form;
-						}, 
-						
+						},
+
 						'ContactTypeFilter' => function ($sm) {
 							return new \CustomerAdmin\Form\ContactTypeFilter ();
-						} 
+						},
+
+						'CustomerGroupForm' => function ($sm) {
+							$form = new \CustomerAdmin\Form\CustomerGroupForm ();
+							$form->setInputFilter ( $sm->get ( 'CustomerGroupFilter' ) );
+							return $form;
+						},
+
+						'CustomerGroupFilter' => function ($sm) {
+							return new \CustomerAdmin\Form\CustomerGroupFilter ();
+						}
 				)
 
 		 );
@@ -170,6 +190,14 @@ class Module implements DependencyIndicatorInterface {
 							$translator = $sm->getServiceLocator()->get('translator');
 							$service = $serviceLocator->get('LegalformService');
 							$element = new \Customer\Form\Element\Legalform($service, $translator);
+							return $element;
+						},
+						'Customer\Form\Element\CustomerGroup' => function  ($sm)
+						{
+							$serviceLocator = $sm->getServiceLocator();
+							$translator = $sm->getServiceLocator()->get('translator');
+							$service = $serviceLocator->get('CustomerGroupService');
+							$element = new \Customer\Form\Element\CustomerGroup($service, $translator);
 							return $element;
 						},
 						'Customer\Form\Element\Companytype' => function  ($sm)

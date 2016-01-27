@@ -39,6 +39,8 @@ return array(
                 array('route' => 'zfcadmin/customer/settings', 'roles' => array('admin')),
                 array('route' => 'zfcadmin/customer/delfile', 'roles' => array('admin')),
                 array('route' => 'zfcadmin/customer/contacttype', 'roles' => array('admin')),
+                array('route' => 'zfcadmin/customer/group', 'roles' => array('admin')),
+                array('route' => 'zfcadmin/customer/massactions', 'roles' => array('admin')),
 
                 // Generic route guards
                 array('route' => 'customer', 'roles' => array('guest')),
@@ -75,7 +77,13 @@ return array(
                         'label' => _('Customers'),
                         'route' => 'zfcadmin/customer/default',
                         'icon' => 'fa fa-group',
-                    )
+                    ),
+
+                    array(
+                        'label' => _('Groups'),
+                        'route' => 'zfcadmin/customer/group',
+                        'icon' => 'fa fa-users',
+                    ),
                 ),
             ),
         ),
@@ -138,6 +146,33 @@ return array(
                                     )
                                 )
                             ),
+                            'massactions' => array(
+                                'type' => 'Segment',
+                                'options' => array(
+                                    'route' => '/massaction/[:task]',
+                                    'constraints' => array(
+                                        'task' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                    ),
+                                    'defaults' => array(
+                                        'controller' => 'CustomerAdmin\Controller\Index',
+                                        'action' => 'mass',
+                                    )
+                                )
+                            ),
+                            'group' => array(
+                                'type' => 'Segment',
+                                'options' => array(
+                                    'route' => '/group/[:action[/:id]]',
+                                    'constraints' => array(
+                                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                                        'id' => '[0-9]*'
+                                    ),
+                                    'defaults' => array(
+                                        'controller' => 'CustomerAdmin\Controller\CustomerGroup',
+                                        'action' => 'index',
+                                    )
+                                )
+                            ),
                             'contacttype' => array(
                                 'type' => 'Segment',
                                 'options' => array(
@@ -178,6 +213,7 @@ return array(
         'factories' => array(
             'CustomerAdmin\Controller\Index' => 'CustomerAdmin\Factory\IndexControllerFactory',
             'CustomerAdmin\Controller\ContactType' => 'CustomerAdmin\Factory\ContactTypeControllerFactory',
+            'CustomerAdmin\Controller\CustomerGroup' => 'CustomerAdmin\Factory\CustomerGroupControllerFactory',
             'CustomerSettings\Controller\Index' => 'CustomerSettings\Factory\IndexControllerFactory',
         )
     ),

@@ -51,6 +51,7 @@ use ZfcDatagrid\Column\Type;
 use ZfcDatagrid\Column\Style;
 use ZfcDatagrid\Column\Formatter;
 use ZfcDatagrid\Filter;
+use ZfcDatagrid\Action;
 use Zend\Db\Sql\Select;
 
 class CustomerDatagrid {
@@ -60,29 +61,51 @@ class CustomerDatagrid {
 	 * @var \ZfcDatagrid\Datagrid
 	 */
 	protected $grid;
-	
+
 	/**
 	 *
 	 * @var \Zend\Db\Adapter\Adapter
 	 */
 	protected $adapter;
-	
+
+	/**
+	 *
+	 * @var \Customer\Service\CustomerService
+	 */
+	protected $mainservice;
+
+	/**
+	 *
+	 * @var \Base\Service\StatusService
+	 */
+	protected $statusservice;
+
 	/**
 	 *
 	 * @var SettingsService
 	 */
 	protected $settings;
-	
+
 	/**
-	 * Datagrid Constructor
-	 * 
+	 * CustomerDatagrid constructor.
+	 *
 	 * @param \Zend\Db\Adapter\Adapter $dbAdapter
-	 * @param \ZfcDatagrid\Datagrid $datagrid
+	 * @param \Customer\Service\CustomerService $mainservice
+	 * @param \Base\Service\StatusService $status
+	 * @param ZfcDatagrid\Datagrid $datagrid
+	 * @param SettingsServiceInterface $settings
 	 */
-	public function __construct(\Zend\Db\Adapter\Adapter $dbAdapter, \ZfcDatagrid\Datagrid $datagrid, SettingsServiceInterface $settings )
+	public function __construct(
+			\Zend\Db\Adapter\Adapter $dbAdapter,
+			\Customer\Service\CustomerService $mainservice,
+			\Base\Service\StatusService $status,
+			\ZfcDatagrid\Datagrid $datagrid,
+			SettingsServiceInterface $settings )
 	{
 		$this->adapter = $dbAdapter;
 		$this->grid = $datagrid;
+		$this->mainservice = $mainservice;
+		$this->statusservice = $status;
 		$this->settings = $settings;
 	}
 	
@@ -103,66 +126,102 @@ class CustomerDatagrid {
 	public function getDatagrid()
 	{
 		$grid = $this->getGrid();
+		$grid->setTitle('Customers');
+
 		$grid->setId('customerGrid');
-		
+		$grid->setToolbarTemplateVariables(array('globalActions' =>
+						array(_('New Customer') => '/admin/customer/add'),
+						array(_('New Customer') => '/admin/customer/add')
+				)
+		);
+
 		$dbAdapter = $this->adapter;
 		$select = new Select();
 		$select->from(array ('c' => 'customer'));
-		
-		$RecordsPerPage = $this->settings->getValueByParameter('Customer', 'recordsperpage');
-		 
-		$grid->setDefaultItemsPerPage($RecordsPerPage);
+		$select->join('user', 'c.user_id = user.user_id', array ('email'), 'left');
+		$select->join('base_status', 'status_id = base_status.id', array ('id'), 'left');
+
+		// Status array
+		$arrStatus = array();
+		$status = $this->statusservice->findAll('customers');
+		foreach ($status as $s) {
+			$arrStatus[$s->getId()] = $s->getStatus();
+		}
+
+		$grid->setDefaultItemsPerPage($this->settings->getValueByParameter('Customer', 'recordsperpage'));
 		$grid->setDataSource($select, $dbAdapter);
-		
-		$colId = new Column\Select('id', 'c');
-		$colId->setLabel('Id');
-		$colId->setIdentity();
-		$grid->addColumn($colId);
-		 
+
+		$col = new Column\Select('id', 'c');
+		$col->setLabel('Id');
+		$col->setIdentity();
+		$grid->addColumn($col);
+
 		$col = new Column\Select('company', 'c');
 		$col->setLabel(_('Company'));
-		$col->setWidth(15);
+		$col->setWidth(40);
 		$grid->addColumn($col);
-		 
+
 		$col = new Column\Select('firstname', 'c');
 		$col->setLabel(_('Last name'));
 		$col->setWidth(15);
 		$grid->addColumn($col);
-		 
+
 		$col = new Column\Select('lastname', 'c');
 		$col->setLabel(_('First name'));
 		$col->setWidth(15);
 		$grid->addColumn($col);
-		 
+
 		$colType = new Type\DateTime('Y-m-d H:i:s', \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
 		$colType->setSourceTimezone('Europe/Rome');
 		$colType->setOutputTimezone('UTC');
 		$colType->setLocale('it_IT');
-		
+
+		$col = new Column\Select('id', 'base_status');
+		$col->setLabel('Status');
+		$col->setWidth(10);
+		$col->setReplaceValues($arrStatus);
+		$col->setFilterSelectOptions($arrStatus);
+		$col->setTranslationEnabled(true);
+		$grid->addColumn($col);
+
+		$col = new Column\Select('email', 'user');
+		$col->setLabel(_('Email'));
+		$col->addFormatter(new Formatter\Email());
+		$col->addStyle(new Style\Bold());
+		$col->setWidth(15);
+		$grid->addColumn($col);
+
 		$col = new Column\Select('createdat', 'c');
 		$col->setType($colType);
 		$col->setLabel(_('Created At'));
 		$grid->addColumn($col);
-		
+
 		// Add actions to the grid
-		$showaction = new Column\Action\Button();
+		$showaction = new Column\Action\Icon();
 		$showaction->setAttribute('href', "/admin/customer/edit/" . $showaction->getColumnValuePlaceholder(new Column\Select('id', 'c')));
 		$showaction->setAttribute('class', 'btn btn-xs btn-success');
-		$showaction->setLabel(_('edit'));
-		
-		$delaction = new Column\Action\Button();
+		$showaction->setIconClass('glyphicon glyphicon-pencil');
+
+		$delaction = new Column\Action\Icon();
 		$delaction->setAttribute('href', '/admin/customer/delete/' . $delaction->getRowIdPlaceholder());
 		$delaction->setAttribute('onclick', "return confirm('Are you sure?')");
 		$delaction->setAttribute('class', 'btn btn-xs btn-danger');
-		$delaction->setLabel(_('delete'));
-		
+		$delaction->setIconClass('glyphicon glyphicon-remove');
+
 		$col = new Column\Action();
 		$col->addAction($showaction);
 		$col->addAction($delaction);
 		$grid->addColumn($col);
-		
-		$grid->setToolbarTemplate('');
-		
+
+
+		$grid->addMassAction(new Action\Mass(_('Enable'), '/admin/customer/massaction/enable', true));
+		$grid->addMassAction(new Action\Mass(_('Disable'), '/admin/customer/massaction/disable', true));
+		$grid->addMassAction(new Action\Mass(_('Delete'), '/admin/customer/massaction/delete', true));
+
+
+		#$grid->setToolbarTemplateVariables(['myVariable' => 123]);
+		#$grid->setToolbarTemplate('zfc-datagrid/toolbar/customer');
+
 		return $grid;
 	}
 

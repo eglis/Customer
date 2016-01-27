@@ -109,9 +109,15 @@ class CustomerService implements CustomerServiceInterface, EventManagerAwareInte
     	if(!is_numeric($id)){
     		return false;
     	}
-    	$rowset = $this->tableGateway->select(array('id' => $id));
-    	$row = $rowset->current();
-    	
+
+        $record = $this->tableGateway->select(function (\Zend\Db\Sql\Select $select) use ($id){
+            $select->join('user', 'customer.user_id = user.user_id', array ('username', 'email', 'display_name', 'state'), 'left');
+            $select->join('user_provider', 'user.user_id = user_provider.user_id', array ('provider'), 'left');
+            $select->where(array('id' => $id));
+        });
+
+        $row = $record->current();
+
     	if(!empty($row) && $row->getId()){
 //     		$address = $this->addressService->find($row->getId());
 //     		$row->setAddress($address);

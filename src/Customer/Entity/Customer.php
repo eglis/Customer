@@ -53,12 +53,17 @@ class Customer implements CustomerInterface {
     public $firstname;
     public $lastname;
     public $gender;
-    public $birthdate;
+	public $birthdate;
     public $birthplace;
     public $birthdistrict;
     public $birthcountry;
     public $birthnationality;
-    public $taxpayernumber;
+	public $vat;
+	public $issubscriber;
+	public $taxfree;
+	public $group_id;
+	public $language_id;
+	public $taxpayernumber;
     public $type_id;
     public $address; // this is not a db field
     public $legalform_id;
@@ -113,14 +118,14 @@ class Customer implements CustomerInterface {
 	/**
 	 * @return the $user_id
 	 */
-	public function getUser_id() {
+	public function getUserId() {
 		return $this->user_id;
 	}
 
 	/**
 	 * @param field_type $user_id
 	 */
-	public function setUser_id($user_id) {
+	public function setUserId($user_id) {
 		$this->user_id = $user_id;
 	}
 
@@ -332,6 +337,86 @@ class Customer implements CustomerInterface {
 	 */
 	public function setStatusId($status_id) {
 		$this->status_id = $status_id;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getVat()
+	{
+		return $this->vat;
+	}
+
+	/**
+	 * @param mixed $vat
+	 */
+	public function setVat($vat)
+	{
+		$this->vat = $vat;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getIssubscriber()
+	{
+		return $this->issubscriber;
+	}
+
+	/**
+	 * @param mixed $issubscriber
+	 */
+	public function setIssubscriber($issubscriber)
+	{
+		$this->issubscriber = $issubscriber;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getTaxfree()
+	{
+		return $this->taxfree;
+	}
+
+	/**
+	 * @param mixed $taxfree
+	 */
+	public function setTaxfree($taxfree)
+	{
+		$this->taxfree = $taxfree;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getGroupId()
+	{
+		return $this->group_id;
+	}
+
+	/**
+	 * @param mixed $group_id
+	 */
+	public function setGroupId($group_id)
+	{
+		$this->group_id = $group_id;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getLanguageId()
+	{
+		return $this->language_id;
+	}
+
+	/**
+	 * @param mixed $language_id
+	 */
+	public function setLanguageId($language_id)
+	{
+		$this->language_id = $language_id;
 	}
 
 	/**
