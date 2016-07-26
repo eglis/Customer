@@ -1,5 +1,5 @@
 {
-  "name": "shineisp/shineisp-customer",
+  "name": "shinesoftware-zf-modules/customer",
   "description": "Customer module for ShineISP project",
   "license": "BSD-2-Clause",
   "type": "library",
@@ -8,7 +8,7 @@
     "zf2",
     "shineisp"
   ],
-  "homepage": "http://github.com/shineisp/Customer",
+  "homepage": "http://github.com/shinesoftware-zf-modules/Customer",
   "authors": [
     {
       "name": "Michelangelo Turillo",
