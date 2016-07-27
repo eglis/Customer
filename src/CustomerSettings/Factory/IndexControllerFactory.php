@@ -18,7 +18,8 @@ class IndexControllerFactory implements FactoryInterface
     {
         $realServiceLocator = $serviceLocator->getServiceLocator();
         $service = $realServiceLocator->get('SettingsService');
+        $form = $realServiceLocator->get('FormElementManager')->get('CustomerSettings\Form\CustomerForm');
 
-        return new IndexController($service);
+        return new IndexController($service, $form);
     }
 }

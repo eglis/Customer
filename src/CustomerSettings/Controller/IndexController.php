@@ -10,23 +10,25 @@
 namespace CustomerSettings\Controller;
 
 use \Base\Service\SettingsServiceInterface;
+use \CustomerSettings\Form\CustomerForm;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 
 class IndexController extends AbstractActionController
 {
-	protected $recordService;
+    protected $recordService;
+    protected $customerForm;
 	
-	public function __construct(SettingsServiceInterface $recordService)
+	public function __construct(SettingsServiceInterface $recordService, CustomerForm $customerForm)
 	{
 		$this->recordService = $recordService;
+        $this->customerForm = $customerForm;
 	}
 	
     public function indexAction ()
     {
     	$formData = array();
-		$form = $this->getServiceLocator()->get('FormElementManager')->get('CustomerSettings\Form\CustomerForm');
-    
+
 		// Get the custom settings of this module: "Cms"
 		$records = $this->recordService->findByModule('Customer');
 		
@@ -37,10 +39,10 @@ class IndexController extends AbstractActionController
 		}
 		
 		// Fill the form with the data
-		$form->setData($formData);
+        $this->customerForm->setData($formData);
 		
     	$viewModel = new ViewModel(array (
-    			'form' => $form,
+    			'form' => $this->customerForm,
     	));
     
     	$viewModel->setTemplate('customer-settings/customer/index');
@@ -58,21 +60,20 @@ class IndexController extends AbstractActionController
 	    	$settingsEntity = new \Base\Entity\Settings();
 	    	
 	    	$post = $this->request->getPost();
-	    	$form = $this->getServiceLocator()->get('FormElementManager')->get('CustomerSettings\Form\CustomerForm');
-	    	$form->setData($post);
+	    	$this->customerForm->setData($post);
 	    	
-	    	if (!$form->isValid()) {
+	    	if (!$this->customerForm->isValid()) {
 	    	
 	    		// Get the record by its id
 	    		$viewModel = new ViewModel(array (
 	    				'error' => true,
-	    				'form' => $form,
+	    				'form' => $this->customerForm,
 	    		));
 	    		$viewModel->setTemplate('customer-settings/customer/index');
 	    		return $viewModel;
 	    	}
 	    	
-	    	$data = $form->getData();
+	    	$data = $this->customerForm->getData();
 	    	
 	    	// Cleanup the custom settings
 	   		$this->recordService->cleanup('Customer');
