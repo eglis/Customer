@@ -1,6 +1,6 @@
 {
   "name": "shinesoftware-zf-modules/customer",
-    "description": "Customer module written for Zend Framework project",
+  "description": "Customer module written for Zend Framework project",
   "license": "BSD-2-Clause",
   "type": "library",
   "minimum-stability": "dev",
@@ -17,7 +17,9 @@
     }
   ],
   "require": {
-    "php": ">=5.4"
+    "php": ">=5.4",
+    "thadafinser/zfc-datagrid": "dev-master",
+    "tecnick.com/tcpdf": "dev-master"
   },
   "autoload": {
     "psr-0": {
